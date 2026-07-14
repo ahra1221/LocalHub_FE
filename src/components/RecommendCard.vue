@@ -9,7 +9,7 @@
     >
       <figure class="h-44 sm:h-56 bg-slate-100 overflow-hidden">
         <img
-          :src="imageUrl"
+          :src="imgSrc"
           :alt="altText"
           class="w-full h-full object-cover transition-transform duration-300 hover:scale-[1.03]"
           loading="lazy"
@@ -30,11 +30,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   title: { type: String, required: true },
-  imageUrl: { type: String, required: true },
+  image: { type: String, required: true },
   address: { type: String, default: '' },
   alt: { type: String, default: '' },
   href: { type: String, default: null }
@@ -42,8 +42,12 @@ const props = defineProps({
 
 const emits = defineEmits(['click'])
 
-const fallbackSrc = '/images/fallback.jpg'
-const imgSrc = ref(props.imageUrl)
+const fallbackSrc = new URL('../images/fallback.jpg', import.meta.url).href
+const imgSrc = ref(props.image)
+
+watch(() => props.image, (v) => {
+  imgSrc.value = v || fallbackSrc
+})
 
 function onImgError() {
   imgSrc.value = fallbackSrc
