@@ -281,7 +281,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
-import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail, createPost } from './api/endpoints'
+import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail, createPost, deletePost } from './api/endpoints'
 
 const storageKey = 'cleanboard_posts'
 const initialPosts = [
@@ -491,17 +491,25 @@ function requestDelete() {
   view.value = 'confirm'
 }
 
-function verifyPassword() {
+async function verifyPassword() {
   const post = selectedPost.value
-  if (!post || passwordCheck.value !== post.password) {
-    errorMessage.value = '비밀번호가 일치하지 않습니다.'
-    return
-  }
+  if (!post) return
+   try {
+    await deletePost(post.id, passwordCheck.value)
 
-  posts.value = posts.value.filter(item => item.id !== post.id)
-  savePostsToStorage()
-  showToast('게시글이 삭제되었습니다.')
-  backToList()
+    await loadPosts()
+    showToast('게시글이 삭제되었습니다.')
+    backToList()
+
+  } catch (err) {
+    const status = err.response?.status
+
+    if (status === 403) {
+      errorMessage.value = '비밀번호가 일치하지 않습니다.'
+    } else {
+      errorMessage.value = '삭제 중 오류가 발생했습니다.'
+    }
+  }
 }
 
 async function submitCreate() {
