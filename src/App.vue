@@ -26,6 +26,42 @@
         </p>
       </div>
 
+        <!-- Recommend buttons -->
+        <div class="mb-6 flex gap-3">
+          <button
+            @click="showRecommendFor('watch')"
+            :class="activeRecommend === 'watch'
+              ? 'bg-brand text-white border-brand'
+              : 'bg-white text-slate-700 border-slate-200'"
+            class="flex-1 py-3 rounded-lg font-semibold border transition"
+          >
+            볼거리 추천
+          </button>
+
+          <button
+            @click="showRecommendFor('enjoy')"
+            :class="activeRecommend === 'enjoy'
+              ? 'bg-brand text-white border-brand'
+              : 'bg-white text-slate-700 border-slate-200'"
+            class="flex-1 py-3 rounded-lg font-semibold border transition"
+          >
+            즐길거리 추천
+          </button>
+        </div>
+
+        <!-- Recommend cards area -->
+        <section v-if="recommendVisible" class="mb-6">
+          <div>
+            <RecommendCard
+              v-for="item in recommendItems"
+              :key="item.title"
+              :title="item.title"
+              :imageUrl="item.imageUrl"
+              :address="item.address"
+            />
+          </div>
+        </section>
+
       <section v-if="view === 'list'" class="space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div v-if="posts.length === 0" class="flex flex-col items-center justify-center py-16 px-4 text-center">
@@ -243,6 +279,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
+import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
 
 const storageKey = 'cleanboard_posts'
@@ -275,6 +312,25 @@ const toast = reactive({
   show: false,
   message: ''
 })
+
+// Recommend card state
+const recommendVisible = ref(false)
+const recommendItems = ref([])
+const activeRecommend = ref(null)
+
+function showRecommendFor(type) {
+  activeRecommend.value = type
+  recommendVisible.value = true
+  if (type === 'watch') {
+    recommendItems.value = [
+      { title: '한강공원', imageUrl: '/images/fallback.jpg', address: '서울 대표 관광지' }
+    ]
+  } else {
+    recommendItems.value = [
+      { title: '광화문', imageUrl: "https://tong.visitkorea.or.kr/cms/resource_photo/46/3551346_image2_1.jpg", address: '역사와 문화의 중심지' }
+    ]
+  }
+}
 
 const sortedPosts = computed(() => {
   return [...posts.value]
