@@ -61,6 +61,37 @@
             />
           </div>
         </section>
+      <div class="mb-6 flex gap-2">
+        <button
+          @click="changeSort('latest')"
+          :class="sortType === 'latest'
+            ? 'bg-brand text-white'
+            : 'bg-white text-slate-600 border border-slate-200'"
+          class="px-4 py-2 rounded-full text-sm font-medium transition"
+        >
+          최신순
+        </button>
+
+        <button
+          @click="changeSort('views')"
+          :class="sortType === 'views'
+            ? 'bg-brand text-white'
+            : 'bg-white text-slate-600 border border-slate-200'"
+          class="px-4 py-2 rounded-full text-sm font-medium transition"
+        >
+          조회순
+        </button>
+
+        <button
+          @click="changeSort('comments')"
+          :class="sortType === 'comments'
+            ? 'bg-brand text-white'
+            : 'bg-white text-slate-600 border border-slate-200'"
+          class="px-4 py-2 rounded-full text-sm font-medium transition"
+        >
+          댓글순
+        </button>
+      </div>  
 
       <section v-if="view === 'list'" class="space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -288,7 +319,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
-import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail, createPost, deletePost, updatePost } from './api/endpoints'
+import { getBannerView, getBannerPlay, fetchPost, fetchPostPopular, fetchPostDetail, createPost, deletePost, updatePost } from './api/endpoints'
 
 const storageKey = 'cleanboard_posts'
 const initialPosts = [
@@ -304,6 +335,7 @@ const initialPosts = [
 ]
 
 const posts = ref([])
+const sortType = ref('latest')
 const view = ref('list')
 const selectedPostId = ref(null)
 const action = ref(null)
@@ -378,24 +410,42 @@ const selectedPost = computed(() => {
 })
 
 onMounted(async () => {
-  await loadPosts()
+  await changeSort('latest')
   const bannerViewData = await getBannerView()
   recommendItems.value = bannerViewData
 })
 
-async function loadPosts() {
-  const postData = await fetchPost()
+async function changeSort(type) {
+  sortType.value = type
 
-  posts.value = Array.isArray(postData)
-    ? postData.map(post => ({
-        id: post.id,
-        title: post.title,
-        content: post.content,
-        views: post.view_count,
-        createdAt: post.created_at,
-        comments: post.comments
-      }))
-    : []
+  let data = []
+
+  switch (type) {
+    case 'latest':
+      data = await fetchPost()
+      break
+
+    case 'views':
+      data = await fetchPostPopular()
+      break
+
+    case 'comments':
+      data = await fetchCommentPosts()
+      break
+  }
+
+  posts.value = mapPosts(data)
+}
+
+function mapPosts(data) {
+  return data.map(post => ({
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    views: post.view_count,
+    createdAt: post.created_at,
+    comments: post.comments
+  }))
 }
 
 function savePostsToStorage() {
@@ -504,7 +554,7 @@ async function verifyPassword() {
    try {
     await deletePost(post.id, passwordCheck.value)
 
-    await loadPosts()
+    await changeSort(sortType.value)
     showToast('게시글이 삭제되었습니다.')
     backToList()
 
@@ -527,7 +577,7 @@ async function submitCreate() {
   }
   
   await createPost(newPost)
-  await loadPosts()
+  await changeSort(sortType.value)
   showToast('게시글이 등록되었습니다.')
   view.value = 'list'
 }
@@ -545,7 +595,7 @@ async function submitEdit() {
 
    try {
     await updatePost(post.id, updateData)
-    await loadPosts()
+    await changeSort(sortType.value)
 
     showToast('수정 사항이 저장되었습니다.')
     view.value = 'detail'
