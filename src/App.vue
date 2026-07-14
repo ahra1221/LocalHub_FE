@@ -184,10 +184,17 @@
             <input
               v-model="form.password"
               type="password"
-              placeholder="글 수정/삭제용 비밀번호를 입력해주세요."
+              placeholder="비밀번호를 입력해주세요."
               required
               class="transition-custom w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
             />
+            <p 
+              v-if="errorMessage"
+              class="text-xs text-red-500 mt-2 flex items-center gap-1"
+            >
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ errorMessage }}</span>
+            </p>
             <p class="text-xs text-slate-400 mt-2">
               <i class="fa-solid fa-circle-info mr-2"></i>
               <span>비밀번호는 본인의 작성물 권한 확인을 위해서만 사용되며 평문 데이터로 내부 저장됩니다.</span>
@@ -281,7 +288,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
-import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail, createPost, deletePost } from './api/endpoints'
+import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail, createPost, deletePost, updatePost } from './api/endpoints'
 
 const storageKey = 'cleanboard_posts'
 const initialPosts = [
@@ -525,21 +532,33 @@ async function submitCreate() {
   view.value = 'list'
 }
 
-function submitEdit() {
-  const post = posts.value.find(item => item.id === selectedPostId.value)
+async function submitEdit() {
+  const post = selectedPost.value
+
   if (!post) return
 
-  if (form.password !== post.password) {
-    errorMessage.value = '기존 글의 비밀번호와 일치해야 합니다.'
-    return
+  const updateData = {
+    title: form.title.trim(),
+    content: form.content.trim(),
+    password: form.password
   }
 
-  post.title = form.title.trim()
-  post.content = form.content.trim()
-  savePostsToStorage()
-  showToast('수정 사항이 저장되었습니다.')
-  view.value = 'detail'
-  errorMessage.value = ''
+   try {
+    await updatePost(post.id, updateData)
+    await loadPosts()
+
+    showToast('수정 사항이 저장되었습니다.')
+    view.value = 'detail'
+
+  } catch (err) {
+    const status = err.response?.status
+
+    if (status === 403) {
+      errorMessage.value = '비밀번호가 일치하지 않습니다.'
+    } else {
+      errorMessage.value = '수정 중 오류가 발생했습니다.'
+    }
+  }
 }
 
 function resetForm() {
