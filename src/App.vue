@@ -281,7 +281,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
-import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail } from './api/endpoints'
+import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail, createPost } from './api/endpoints'
 
 const storageKey = 'cleanboard_posts'
 const initialPosts = [
@@ -371,21 +371,25 @@ const selectedPost = computed(() => {
 })
 
 onMounted(async () => {
-  const postData = await fetchPost()
-  posts.value = Array.isArray(postData)
-  ? postData.map(post => ({
-      id: post.id,
-      title: post.title,
-      content: post.content,
-      views: post.view_count,
-      createdAt: post.created_at,
-      comments: post.comments
-    }))
-  : []
-
+  await loadPosts()
   const bannerViewData = await getBannerView()
   recommendItems.value = bannerViewData
 })
+
+async function loadPosts() {
+  const postData = await fetchPost()
+
+  posts.value = Array.isArray(postData)
+    ? postData.map(post => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        views: post.view_count,
+        createdAt: post.created_at,
+        comments: post.comments
+      }))
+    : []
+}
 
 function savePostsToStorage() {
   localStorage.setItem(storageKey, JSON.stringify(posts.value))
@@ -506,22 +510,17 @@ function verifyPassword() {
   }
 }
 
-function submitCreate() {
+async function submitCreate() {
   const newPost = {
-    id: Date.now(),
     title: form.title.trim(),
     content: form.content.trim(),
-    password: form.password,
-    views: 0,
-    createdAt: new Date().toISOString()
+    password: form.password
   }
-
-  posts.value.unshift(newPost)
-  savePostsToStorage()
-  resetForm()
-  selectedPostId.value = newPost.id
-  view.value = 'detail'
+  
+  await createPost(newPost)
+  await loadPosts()
   showToast('게시글이 등록되었습니다.')
+  view.value = 'list'
 }
 
 function submitEdit() {
