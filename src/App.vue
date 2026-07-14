@@ -281,7 +281,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
-import { getBannerView, getBannerPlay } from './api/endpoints'
+import { getBannerView, getBannerPlay, fetchPost, fetchPostDetail } from './api/endpoints'
 
 const storageKey = 'cleanboard_posts'
 const initialPosts = [
@@ -371,16 +371,20 @@ const selectedPost = computed(() => {
 })
 
 onMounted(async () => {
-  const storedPosts = localStorage.getItem(storageKey)
-  if (storedPosts) {
-    posts.value = JSON.parse(storedPosts)
-  } else {
-    posts.value = initialPosts
-    savePostsToStorage()
-  }
-  const res = await getBannerView()
-  recommendItems.value = res
-  console.log(res)
+  const postData = await fetchPost()
+  posts.value = Array.isArray(postData)
+  ? postData.map(post => ({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      views: post.view_count,
+      createdAt: post.created_at,
+      comments: post.comments
+    }))
+  : []
+
+  const bannerViewData = await getBannerView()
+  recommendItems.value = bannerViewData
 })
 
 function savePostsToStorage() {
@@ -418,14 +422,26 @@ function showCreate() {
   view.value = 'create'
 }
 
-function openDetail(post) {
+async function openDetail(post) {
   closeRecommend()
-  selectedPostId.value = post.id
-  const target = posts.value.find(item => item.id === post.id)
-  if (target) {
-    target.views = (target.views || 0) + 1
-    savePostsToStorage()
+  const detailData = await fetchPostDetail(post.id)
+  const index = posts.value.findIndex(
+    item => item.id === post.id
+  )
+
+  if (index !== -1) {
+    posts.value[index] = {
+      ...posts.value[index],
+      id: detailData.id,
+      title: detailData.title,
+      content: detailData.content,
+      views: detailData.view_count,
+      createdAt: detailData.created_at,
+      comments: detailData.comments
+    }
   }
+
+  selectedPostId.value = post.id
   view.value = 'detail'
 }
 
