@@ -475,7 +475,13 @@ function requestEdit() {
   action.value = 'edit'
   passwordCheck.value = ''
   errorMessage.value = ''
-  view.value = 'confirm'
+  const post = selectedPost.value
+  if (!post) return
+
+  form.title = post.title
+  form.content = post.content
+  form.password = post.password
+  view.value = 'edit'
 }
 
 function requestDelete() {
@@ -492,22 +498,10 @@ function verifyPassword() {
     return
   }
 
-  if (action.value === 'delete') {
-    posts.value = posts.value.filter(item => item.id !== post.id)
-    savePostsToStorage()
-    showToast('게시글이 삭제되었습니다.')
-    backToList()
-    return
-  }
-
-  if (action.value === 'edit') {
-    form.title = post.title
-    form.content = post.content
-    form.password = post.password
-    view.value = 'edit'
-    errorMessage.value = ''
-    passwordCheck.value = ''
-  }
+  posts.value = posts.value.filter(item => item.id !== post.id)
+  savePostsToStorage()
+  showToast('게시글이 삭제되었습니다.')
+  backToList()
 }
 
 async function submitCreate() {
