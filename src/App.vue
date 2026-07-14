@@ -319,6 +319,10 @@ const recommendItems = ref([])
 const activeRecommend = ref(null)
 
 function showRecommendFor(type) {
+  if (activeRecommend.value === type) {
+    closeRecommend()
+    return
+  }
   activeRecommend.value = type
   recommendVisible.value = true
   if (type === 'watch') {
@@ -379,16 +383,19 @@ function formatDate(dateString) {
 }
 
 function goHome() {
+  closeRecommend()
   resetState()
   view.value = 'list'
 }
 
 function showCreate() {
+  closeRecommend()
   resetForm()
   view.value = 'create'
 }
 
 function openDetail(post) {
+  closeRecommend()
   selectedPostId.value = post.id
   const target = posts.value.find(item => item.id === post.id)
   if (target) {
@@ -399,6 +406,7 @@ function openDetail(post) {
 }
 
 function backToList() {
+  closeRecommend()
   resetState()
   view.value = 'list'
 }
@@ -505,5 +513,11 @@ function resetState() {
   passwordCheck.value = ''
   errorMessage.value = ''
   resetForm()
+}
+
+function closeRecommend() {
+  recommendVisible.value = false
+  activeRecommend.value = null
+  recommendItems.value = []
 }
 </script>
