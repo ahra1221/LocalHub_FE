@@ -164,7 +164,7 @@
                     익명
                   </span>
                   <span>•</span>
-                  <span>{{ formatDate(post.createdAt) }}</span>
+                  <span>{{ post.createdAt }}</span>
                 </div>
                 <div
                   class="flex items-center gap-1 text-slate-400 bg-slate-100/75 px-2 py-0.5 rounded-full text-[11px]"
@@ -221,7 +221,7 @@
             <div class="flex items-center gap-2 text-xs text-slate-400">
               <span class="font-semibold text-slate-600">익명</span>
               <span>•</span>
-              <span>{{ formatDate(selectedPost.createdAt) }}</span>
+              <span>{{ selectedPost.createdAt }}</span>
               <span>•</span>
               <span
                 class="flex items-center gap-1 text-slate-500 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-100"
@@ -621,17 +621,6 @@ function showToast(message) {
   setTimeout(() => {
     toast.show = false;
   }, 2800);
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 function goHome() {
