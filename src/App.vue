@@ -78,6 +78,8 @@
             :title="item.title"
             :image="item.image"
             :address="item.address"
+            :googleMapUrl="item.googleMapUrl"
+            @click="openMap"
           />
         </div>
       </section>
@@ -499,7 +501,14 @@ async function showRecommendFor(type) {
       const image = data?.image || data?.image2 || "/images/fallback.jpg";
       const title = data?.title || "제목 없음";
       const address = data?.address || "";
-      recommendItems.value = [{ title, image, address }];
+      recommendItems.value = [
+        {
+          title,
+          image,
+          address,
+          googleMapUrl: data?.googleMapUrl || null
+        }
+      ];
     } catch (err) {
       console.error("getBannerView error", err);
       recommendItems.value = [
@@ -507,6 +516,7 @@ async function showRecommendFor(type) {
           title: "한강공원",
           image: "/images/fallback.jpg",
           address: "서울 대표 관광지",
+          googleMapUrl: null
         },
       ];
     }
@@ -518,18 +528,31 @@ async function showRecommendFor(type) {
       const image = item?.image || item?.image2 || "/images/fallback.jpg";
       const title = item?.title || "제목 없음";
       const address = item?.address || "";
-      recommendItems.value = [{ title, image, address }];
+      recommendItems.value = [
+        {
+          title,
+          image,
+          address,
+          googleMapUrl: data?.googleMapUrl || null
+        }
+      ];
     } catch (err) {
       console.error("getBannerPlay error", err);
       recommendItems.value = [
         {
           title: "광화문",
-          image:
-            "https://tong.visitkorea.or.kr/cms/resource_photo/46/3551346_image2_1.jpg",
+          image: "/images/fallback.jpg",
           address: "역사와 문화의 중심지",
+          googleMapUrl: null
         },
       ];
     }
+  }
+}
+
+function openMap(url) {
+  if (url) {
+    window.open(url, "_blank")
   }
 }
 

@@ -10,7 +10,7 @@
       <figure class="h-44 sm:h-56 bg-slate-100 overflow-hidden">
         <img
           :src="imgSrc"
-          :alt="altText"
+          :alt="title"
           class="w-full h-full object-cover transition-transform duration-300 hover:scale-[1.03]"
           loading="lazy"
           @error="onImgError"
@@ -30,33 +30,31 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   title: { type: String, required: true },
   image: { type: String, required: true },
   address: { type: String, default: '' },
-  alt: { type: String, default: '' },
-  href: { type: String, default: null }
+  googleMapUrl: { type: String, default: null }
 })
 
 const emits = defineEmits(['click'])
 
-const fallbackSrc = new URL('../images/fallback.jpg', import.meta.url).href
+const fallbackSrc = '/images/fallback.jpg'
 const imgSrc = ref(props.image)
-
-watch(() => props.image, (v) => {
-  imgSrc.value = v || fallbackSrc
-})
 
 function onImgError() {
   imgSrc.value = fallbackSrc
 }
 
-const altText = computed(() => props.alt || props.title)
 const address = computed(() => {
   if (!props.address) return ''
   return props.address.length > 90 ? props.address.slice(0, 90) + '…' : props.address
 })
+
+function handleClick() {
+  emits('click', props.googleMapUrl)
+}
 
 </script>
