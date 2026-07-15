@@ -341,7 +341,7 @@
             :class="message.role === 'user'
               ? 'bg-brand text-white'
               : 'bg-white border border-slate-200'"
-            class="max-w-[80%] px-4 py-2 rounded-2xl text-sm"
+            class="max-w-[80%] px-4 py-2 rounded-2xl text-sm whitespace-pre-line"
           >
             {{ message.content }}
           </div>
@@ -390,7 +390,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import RecommendCard from './components/RecommendCard.vue'
 import './App.css'
-import { getBannerView, getBannerPlay, fetchPost, fetchPostPopular, fetchPostDetail, createPost, deletePost, updatePost } from './api/endpoints'
+import { getBannerView, getBannerPlay, fetchPost, fetchPostPopular, fetchPostDetail, createPost, deletePost, updatePost, fetchChat } from './api/endpoints'
 import { watch, nextTick } from 'vue'
 
 const storageKey = 'cleanboard_posts'
@@ -728,20 +728,30 @@ watch(
 async function sendMessage() {
   if (!chatInput.value.trim()) return
 
+  const text = chatInput.value
+
   messages.value.push({
     id: Date.now(),
     role: 'user',
-    content: chatInput.value
+    content: text
   })
 
-  const text = chatInput.value
   chatInput.value = ''
 
-  // TODO : API 호출
+  try {
+    const data = await fetchChat(text)
 
-  messages.value.push({
-    id: Date.now() + 1,
-    role: 'assistant',
-    content: `"${text}"에 대한 답변입니다.`
-  })}
+    messages.value.push({
+      id: Date.now() + 1,
+      role: 'assistant',
+      content: data.reply
+    })
+  } catch (err) {
+    messages.value.push({
+      id: Date.now() + 1,
+      role: 'assistant',
+      content: err
+    })
+  }
+}
 </script>

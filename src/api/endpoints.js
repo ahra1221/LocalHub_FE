@@ -14,3 +14,8 @@ export const deletePost = (id, password) =>
       password
     }
   }).then(r => r.data)
+
+export const fetchChat = (message) =>
+  api.post('/chat', {
+    message
+  }).then(r => r.data)
