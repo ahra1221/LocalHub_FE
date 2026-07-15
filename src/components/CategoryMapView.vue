@@ -1,27 +1,31 @@
 <template>
-  <div class="fixed inset-0 z-50 bg-white">
+  <div
+    class="relative w-[80vw] h-[80vh] bg-white rounded-2xl overflow-hidden shadow-2xl"
+  >
     <!-- 닫기 -->
     <button
       @click="$emit('close')"
-      class="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white shadow-lg hover:bg-slate-100"
+      class="absolute top-5 right-5 z-50 bg-white rounded-full shadow-lg w-11 h-11 hover:bg-slate-100"
     >
       ✕
     </button>
 
     <!-- 지도 -->
-    <div ref="mapContainer" class="w-full h-full"></div>
+    <div
+      ref="mapContainer"
+      class="w-full h-full"
+    ></div>
 
-    <!-- 카드 -->
+    <!-- RecommendCard -->
     <div
       v-if="selectedPlace"
       class="absolute z-40 w-[340px] -translate-x-1/2 -translate-y-full"
       :style="{
-        left: `${cardPosition.x}px`,
-        top: `${cardPosition.y}px`,
+        left: cardPosition.x + 'px',
+        top: cardPosition.y + 'px',
       }"
     >
       <RecommendCard
-        :key="selectedPlace.contentid"
         :title="selectedPlace.title"
         :image="selectedPlace.image"
         :address="selectedPlace.address"

@@ -459,11 +459,15 @@
       </p>
     </div>
 
-    <CategoryMapView
+    <div
       v-if="mapVisible"
-      :category="selectedCategory"
-      @close="closeMap"
-    />
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
+      <CategoryMapView
+        :category="selectedCategory"
+        @close="closeMap"
+      />
+    </div>
 
     <footer
       class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400"
