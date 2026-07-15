@@ -166,11 +166,20 @@
                   <span>•</span>
                   <span>{{ post.createdAt }}</span>
                 </div>
-                <div
-                  class="flex items-center gap-1 text-slate-400 bg-slate-100/75 px-2 py-0.5 rounded-full text-[11px]"
-                >
-                  <i class="fa-regular fa-eye text-[10px]"></i>
-                  <span>{{ post.views || 0 }}</span>
+                <div class="flex items-center gap-2">
+                  <div
+                    class="flex items-center gap-1 text-slate-400 bg-slate-100/75 px-2 py-0.5 rounded-full text-[11px]"
+                  >
+                    <i class="fa-regular fa-eye text-[10px]"></i>
+                    <span>{{ post.views || 0 }}</span>
+                  </div>
+                  
+                  <div
+                    class="flex items-center gap-1 text-slate-400 bg-slate-100/75 px-2 py-0.5 rounded-full text-[11px]"
+                  >
+                    <i class="fa-regular fa-comment text-[10px]"></i>
+                    <span>{{ post.commentCount || 0 }}</span>
+                  </div>
                 </div>
               </div>
               <h3
@@ -243,6 +252,11 @@
             {{ selectedPost.content }}
           </p>
         </article>
+
+        <CommentSection
+          :comments="selectedPost.comments || []"
+          @submit="submitComment"
+        />
       </section>
 
       <section
@@ -437,18 +451,23 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
+
 import RecommendCard from "./components/RecommendCard.vue";
 import AIChat from "./components/AIChat.vue";
+import CommentSection from "./components/CommentSection.vue";
+
 import "./App.css";
 import {
   getBannerView,
   getBannerPlay,
   fetchPost,
   fetchPostPopular,
+  fetchPostPopular2,
   fetchPostDetail,
   createPost,
   deletePost,
   updatePost,
+  createComment,
 } from "./api/endpoints";
 import { watch, nextTick } from "vue";
 
@@ -558,7 +577,6 @@ function openMap(url) {
 
 const sortedPosts = computed(() => {
   return [...posts.value]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map((post) => ({
       ...post,
       preview:
@@ -593,7 +611,7 @@ async function changeSort(type) {
       break;
 
     case "comments":
-      data = await fetchCommentPosts();
+      data = await fetchPostPopular2();
       break;
   }
 
@@ -606,6 +624,7 @@ function mapPosts(data) {
     title: post.title,
     content: post.content,
     views: post.view_count,
+    commentCount: post.comment_count,
     createdAt: post.created_at,
     comments: post.comments,
   }));
@@ -774,6 +793,29 @@ function closeRecommend() {
   recommendVisible.value = false;
   activeRecommend.value = null;
   recommendItems.value = [];
+}
+
+async function submitComment(comment) {
+  try {
+    await createComment(selectedPostId.value, comment);
+    const detailData = await fetchPostDetail(selectedPostId.value);
+
+    const index = posts.value.findIndex(
+      (post) => post.id === selectedPostId.value
+    );
+
+    if (index !== -1) {
+      posts.value[index] = {
+        ...posts.value[index],
+        comments: detailData.comments,
+      };
+    }
+
+    showToast("댓글이 등록되었습니다.");
+
+  } catch (err) {
+    showToast(err);
+  }
 }
 
 </script>
