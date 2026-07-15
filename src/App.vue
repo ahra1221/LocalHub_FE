@@ -42,6 +42,15 @@
         </p>
       </div>
 
+      <div class="mb-6 grid grid-cols-6 gap-3">
+        <CategoryButton
+          v-for="category in categories"
+          :key="category.id"
+          :category="category"
+          @click="selectCategory"
+        />
+      </div>
+
       <!-- Recommend buttons -->
       <div class="mb-6 flex gap-3">
         <button
@@ -450,6 +459,12 @@
       </p>
     </div>
 
+    <CategoryMapView
+      v-if="mapVisible"
+      :category="selectedCategory"
+      @close="closeMap"
+    />
+
     <footer
       class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400"
     >
@@ -467,6 +482,9 @@ import RecommendCard from "./components/RecommendCard.vue";
 import AIChat from "./components/AIChat.vue";
 import CommentSection from "./components/CommentSection.vue";
 import MapView from "./components/MapView.vue";
+import CategoryButton from "./components/CategoryButton.vue";
+import CategoryMapView from "./components/CategoryMapView.vue";
+import { categories } from "./components/categories";
 
 import "./App.css";
 import {
@@ -480,6 +498,7 @@ import {
   deletePost,
   updatePost,
   createComment,
+  fetchCategory
 } from "./api/endpoints";
 
 const posts = ref([]);
@@ -493,7 +512,7 @@ const form = reactive({
   title: "",
   content: "",
   password: "",
-});
+}); 
 
 const toast = reactive({
   show: false,
@@ -818,6 +837,19 @@ async function submitComment(comment) {
   } catch (err) {
     showToast(err);
   }
+}
+
+const selectedCategory = ref(null);
+const mapVisible = ref(false);
+
+function selectCategory(category) {
+  selectedCategory.value = category;
+  mapVisible.value = true;
+}
+
+function closeMap() {
+  mapVisible.value = false;
+  selectedCategory.value = null;
 }
 
 </script>

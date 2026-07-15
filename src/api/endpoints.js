@@ -33,3 +33,6 @@ export const fetchChat = (message) =>
 export function createComment(postId, content) {
   return api.post(`/posts/${postId}/comments`, content);
 }
+
+export const fetchCategory = (contentType) =>
+  api.get(`/place/${contentType}`).then((r) => r.data);
