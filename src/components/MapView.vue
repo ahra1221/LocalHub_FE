@@ -1,7 +1,7 @@
 <template>
   <div
     ref="mapContainer"
-    class="w-full h-[400px] rounded-2xl overflow-hidden"
+    class="w-full h-full rounded-2xl overflow-hidden"
   ></div>
 </template>
 

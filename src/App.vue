@@ -73,10 +73,11 @@
         <div
           v-for="item in recommendItems"
           :key="item.title"
-          class="flex gap-4"
+          class="flex gap-4 items-stretch"
         >
           <div class="flex-1">
             <RecommendCard
+              class="h-full"
               :title="item.title"
               :image="item.image"
               :address="item.address"
