@@ -343,7 +343,15 @@
               : 'bg-white border border-slate-200'"
             class="max-w-[80%] px-4 py-2 rounded-2xl text-sm whitespace-pre-line"
           >
-            {{ message.content }}
+            <div v-if="message.loading" class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <span v-else class="whitespace-pre-line">
+              {{ message.content }}
+            </span>
           </div>
         </div>
       </div>
@@ -737,21 +745,35 @@ async function sendMessage() {
   })
 
   chatInput.value = ''
+  const loadingId = Date.now() + 1
+
+  messages.value.push({
+    id: loadingId,
+    role: 'assistant',
+    content: '...',
+    loading: true
+  })
 
   try {
     const data = await fetchChat(text)
 
-    messages.value.push({
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: data.reply
-    })
+    const loadingMessage = messages.value.find(
+      message => message.id === loadingId
+    )
+
+    if (loadingMessage) {
+      loadingMessage.content = data.reply
+      loadingMessage.loading = false
+    }
   } catch (err) {
-    messages.value.push({
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: err
-    })
+    const loadingMessage = messages.value.find(
+      message => message.id === loadingId
+    )
+
+    if (loadingMessage) {
+      loadingMessage.content = '오류가 발생했습니다.'
+      loadingMessage.loading = false
+    }
   }
 }
 </script>
