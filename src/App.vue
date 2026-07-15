@@ -16,7 +16,7 @@
             <i class="fa-solid fa-feather-alt text-sm"></i>
           </div>
           <span class="font-bold text-lg text-brand tracking-tight"
-            >LocalHub</span
+            >SeoulHub</span
           >
         </div>
         <button
