@@ -1,15 +1,25 @@
 <template>
   <div class="fixed inset-0 z-50 bg-white">
+    <!-- 닫기 -->
     <button
       @click="$emit('close')"
-      class="absolute top-5 right-5 z-30 bg-white rounded-full shadow-lg w-11 h-11 hover:bg-slate-100"
+      class="absolute top-5 right-5 z-50 bg-white rounded-full shadow-lg w-11 h-11 hover:bg-slate-100"
     >
       ✕
     </button>
 
+    <!-- 지도 -->
     <div ref="mapContainer" class="w-full h-full"></div>
 
-    <div v-if="selectedPlace" class="absolute left-6 bottom-6 z-20 w-[360px]">
+    <!-- 카드 -->
+    <div
+      v-if="selectedPlace"
+      class="absolute z-40 w-[340px] -translate-x-1/2 -translate-y-full"
+      :style="{
+        left: cardPosition.x + 'px',
+        top: cardPosition.y + 'px',
+      }"
+    >
       <RecommendCard
         :title="selectedPlace.title"
         :image="selectedPlace.image"
@@ -22,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 
 import RecommendCard from "./RecommendCard.vue";
 import { loadMap } from "./loadMap";
@@ -41,6 +51,11 @@ const mapContainer = ref(null);
 
 const selectedPlace = ref(null);
 
+const cardPosition = reactive({
+  x: 0,
+  y: 0,
+});
+
 let map = null;
 
 async function renderMap() {
@@ -48,7 +63,7 @@ async function renderMap() {
 
   const places = await fetchCategory(props.category.endpoint);
 
-  if (!places || places.length === 0) return;
+  if (!places?.length) return;
 
   const center = new kakao.maps.LatLng(
     Number(places[0].mapy),
@@ -70,22 +85,59 @@ async function renderMap() {
 
     bounds.extend(position);
 
-    // 기본 마커
     const marker = new kakao.maps.Marker({
-      position,
       map,
+      position,
     });
 
     kakao.maps.event.addListener(marker, "click", () => {
-      // 항상 하나의 카드만 표시
       selectedPlace.value = place;
 
-      // 클릭한 마커를 가운데로 이동
       map.panTo(position);
+
+      setTimeout(() => {
+        updateCardPosition(position);
+      }, 200);
     });
   });
 
   map.setBounds(bounds);
+
+  // 자동 확대
+  setTimeout(() => {
+    map.setLevel(Math.max(map.getLevel() - 1, 3));
+  }, 100);
+
+  kakao.maps.event.addListener(map, "center_changed", () => {
+    if (!selectedPlace.value) return;
+
+    updateCardPosition(
+      new kakao.maps.LatLng(
+        Number(selectedPlace.value.mapy),
+        Number(selectedPlace.value.mapx),
+      ),
+    );
+  });
+
+  kakao.maps.event.addListener(map, "zoom_changed", () => {
+    if (!selectedPlace.value) return;
+
+    updateCardPosition(
+      new kakao.maps.LatLng(
+        Number(selectedPlace.value.mapy),
+        Number(selectedPlace.value.mapx),
+      ),
+    );
+  });
+}
+
+function updateCardPosition(latlng) {
+  const projection = map.getProjection();
+
+  const point = projection.containerPointFromCoords(latlng);
+
+  cardPosition.x = point.x;
+  cardPosition.y = point.y - 15;
 }
 
 function openMap(url) {
