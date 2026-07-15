@@ -69,20 +69,30 @@
         </button>
       </div>
 
-      <!-- Recommend cards area -->
       <section v-if="recommendVisible" class="mb-6">
-        <div>
-          <RecommendCard
-            v-for="item in recommendItems"
-            :key="item.title"
-            :title="item.title"
-            :image="item.image"
-            :address="item.address"
-            :googleMapUrl="item.googleMapUrl"
-            @click="openMap"
-          />
+        <div
+          v-for="item in recommendItems"
+          :key="item.title"
+          class="flex gap-4"
+        >
+          <div class="flex-1">
+            <RecommendCard
+              :title="item.title"
+              :image="item.image"
+              :address="item.address"
+              :googleMapUrl="item.googleMapUrl"
+            />
+          </div>
+
+          <div class="flex-1">
+            <MapView
+              :mapx="item.mapx"
+              :mapy="item.mapy"
+            />
+          </div>
         </div>
       </section>
+
       <div
         v-if="view === 'list'"
         class="mb-6 flex gap-2"
@@ -443,7 +453,7 @@
       class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400"
     >
       <div class="max-w-3xl mx-auto px-5 space-y-1">
-        <p class="font-bold text-slate-500">익명 자유게시판</p>
+        <p class="font-bold text-slate-500">SeoulHub</p>
       </div>
     </footer>
   </div>
@@ -455,6 +465,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import RecommendCard from "./components/RecommendCard.vue";
 import AIChat from "./components/AIChat.vue";
 import CommentSection from "./components/CommentSection.vue";
+import MapView from "./components/MapView.vue";
 
 import "./App.css";
 import {
@@ -469,20 +480,6 @@ import {
   updatePost,
   createComment,
 } from "./api/endpoints";
-import { watch, nextTick } from "vue";
-
-const storageKey = "cleanboard_posts";
-const initialPosts = [
-  {
-    id: 1,
-    title: "환영합니다! 익명 자유게시판입니다.",
-    content:
-      "이 게시판은 번거로운 회원가입 절차 없이 제목, 내용, 그리고 비밀번호만 지정하면 편리하게 이용하실 수 있습니다.\n\n글 작성 시 설정하신 비밀번호는 본인의 글을 수정하거나 삭제하고 싶을 때 유용하게 쓰입니다. 잊지 않도록 잘 보관하시기를 바랍니다.\n\n가독성 높은 프리미엄 고딕 폰트로 구성된 쾌적한 화면에서 자유로운 대화를 나누어보세요.",
-    password: "1234",
-    views: 42,
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-  },
-];
 
 const posts = ref([]);
 const sortType = ref("latest");
@@ -525,7 +522,9 @@ async function showRecommendFor(type) {
           title,
           image,
           address,
-          googleMapUrl: data?.googleMapUrl || null
+          googleMapUrl: data?.googleMapUrl || null,
+          mapx: data?.mapx || null,
+          mapy: data?.mapy || null,
         }
       ];
     } catch (err) {
@@ -535,7 +534,9 @@ async function showRecommendFor(type) {
           title: "한강공원",
           image: "/images/fallback.jpg",
           address: "서울 대표 관광지",
-          googleMapUrl: null
+          googleMapUrl: null,
+          mapx: null,
+          mapy: null,
         },
       ];
     }
@@ -552,7 +553,9 @@ async function showRecommendFor(type) {
           title,
           image,
           address,
-          googleMapUrl: data?.googleMapUrl || null
+          googleMapUrl: data?.googleMapUrl || null,
+          mapx: data?.mapx || null,
+          mapy: data?.mapy || null,
         }
       ];
     } catch (err) {
@@ -562,7 +565,9 @@ async function showRecommendFor(type) {
           title: "광화문",
           image: "/images/fallback.jpg",
           address: "역사와 문화의 중심지",
-          googleMapUrl: null
+          googleMapUrl: null,
+          mapx: null,
+          mapy: null,
         },
       ];
     }
@@ -628,10 +633,6 @@ function mapPosts(data) {
     createdAt: post.created_at,
     comments: post.comments,
   }));
-}
-
-function savePostsToStorage() {
-  localStorage.setItem(storageKey, JSON.stringify(posts.value));
 }
 
 function showToast(message) {
