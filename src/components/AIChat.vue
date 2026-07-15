@@ -81,62 +81,66 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
-import { fetchChat } from '@/api/endpoints'
+import { ref, watch, nextTick } from "vue";
+import { fetchChat } from "@/api/endpoints";
 
-const chatOpen = ref(false)
-const chatInput = ref('')
+const chatOpen = ref(false);
+const chatInput = ref("");
 const messages = ref([
   {
     id: 1,
-    role: 'assistant',
-    content: '안녕하세요! 어떤 정보를 찾고 계신가요?',
+    role: "assistant",
+    content: "안녕하세요! 어떤 정보를 찾고 계신가요?",
   },
-])
-const messageContainer = ref(null)
+]);
+const messageContainer = ref(null);
 
 watch(
   () => messages.value.length,
   async () => {
-    await nextTick()
+    await nextTick();
     if (messageContainer.value) {
-      messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
     }
   },
-)
+);
 
 async function sendMessage() {
-  if (!chatInput.value.trim()) return
+  if (!chatInput.value.trim()) return;
 
-  const text = chatInput.value
+  const text = chatInput.value;
   messages.value.push({
     id: Date.now(),
-    role: 'user',
+    role: "user",
     content: text,
-  })
+  });
 
-  chatInput.value = ''
-  const loadingId = Date.now() + 1
+  chatInput.value = "";
+  const loadingId = Date.now() + 1;
 
   messages.value.push({
     id: loadingId,
-    role: 'assistant',
-    content: '...',
+    role: "assistant",
+    content: "...",
     loading: true,
-  })
+  });
 
   try {
-    const data = await fetchChat(text)
-    const loadingMessage = messages.value.find((message) => message.id === loadingId)
+    const data = await fetchChat(text);
+    const loadingMessage = messages.value.find(
+      (message) => message.id === loadingId,
+    );
     if (loadingMessage) {
-      loadingMessage.content = data.reply
-      loadingMessage.loading = false
+      loadingMessage.content = data.reply;
+      loadingMessage.loading = false;
     }
   } catch (err) {
-    const loadingMessage = messages.value.find((message) => message.id === loadingId)
+    const loadingMessage = messages.value.find(
+      (message) => message.id === loadingId,
+    );
     if (loadingMessage) {
-      loadingMessage.content = '오류가 발생했습니다.'
-      loadingMessage.loading = false
+      loadingMessage.content = "오류가 발생했습니다.";
+      loadingMessage.loading = false;
     }
   }
 }

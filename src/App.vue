@@ -81,7 +81,11 @@
           />
         </div>
       </section>
-      <div class="mb-6 flex gap-2">
+      <div
+        v-if="view === 'list'"
+        class="mb-6 flex gap-2"
+      >
+        
         <button
           @click="changeSort('latest')"
           :class="
@@ -360,9 +364,7 @@
           </div>
           <h2 class="text-lg font-bold text-slate-900">비밀번호 확인</h2>
           <p class="text-xs sm:text-sm text-slate-500 leading-normal">
-            선택하신 게시글을
-            <strong>{{ action === "edit" ? "수정" : "삭제" }}</strong
-            >하려면 비밀번호를 입력해주세요.
+            선택하신 게시글을 삭제하려면 비밀번호를 입력해주세요.
           </p>
         </div>
 
@@ -465,7 +467,6 @@ const posts = ref([]);
 const sortType = ref("latest");
 const view = ref("list");
 const selectedPostId = ref(null);
-const action = ref(null);
 const passwordCheck = ref("");
 const errorMessage = ref("");
 
@@ -666,7 +667,6 @@ function backToDetail() {
 }
 
 function requestEdit() {
-  action.value = "edit";
   passwordCheck.value = "";
   errorMessage.value = "";
   const post = selectedPost.value;
@@ -679,7 +679,6 @@ function requestEdit() {
 }
 
 function requestDelete() {
-  action.value = "delete";
   passwordCheck.value = "";
   errorMessage.value = "";
   view.value = "confirm";
@@ -754,7 +753,6 @@ function resetForm() {
 
 function resetState() {
   selectedPostId.value = null;
-  action.value = null;
   passwordCheck.value = "";
   errorMessage.value = "";
   resetForm();
