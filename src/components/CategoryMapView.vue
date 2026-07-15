@@ -3,7 +3,7 @@
     <!-- 닫기 -->
     <button
       @click="$emit('close')"
-      class="absolute top-5 right-5 z-50 bg-white rounded-full shadow-lg w-11 h-11 hover:bg-slate-100"
+      class="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white shadow-lg hover:bg-slate-100"
     >
       ✕
     </button>
@@ -16,11 +16,12 @@
       v-if="selectedPlace"
       class="absolute z-40 w-[340px] -translate-x-1/2 -translate-y-full"
       :style="{
-        left: cardPosition.x + 'px',
-        top: cardPosition.y + 'px',
+        left: `${cardPosition.x}px`,
+        top: `${cardPosition.y}px`,
       }"
     >
       <RecommendCard
+        :key="selectedPlace.contentid"
         :title="selectedPlace.title"
         :image="selectedPlace.image"
         :address="selectedPlace.address"
@@ -32,8 +33,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-
+import { ref, reactive, onMounted, nextTick } from "vue";
 import RecommendCard from "./RecommendCard.vue";
 import { loadMap } from "./loadMap";
 import { fetchCategory } from "../api/endpoints";
@@ -57,6 +57,7 @@ const cardPosition = reactive({
 });
 
 let map = null;
+let currentMarker = null;
 
 async function renderMap() {
   await loadMap();
@@ -65,57 +66,60 @@ async function renderMap() {
 
   if (!places?.length) return;
 
+  // 강남역
   const center = new kakao.maps.LatLng(
-    Number(places[0].mapy),
-    Number(places[0].mapx),
+    37.5012860931305,
+    127.039604663862
   );
 
   map = new kakao.maps.Map(mapContainer.value, {
     center,
-    level: 5,
+    level: 3,
   });
-
-  const bounds = new kakao.maps.LatLngBounds();
 
   places.forEach((place) => {
     const position = new kakao.maps.LatLng(
       Number(place.mapy),
-      Number(place.mapx),
+      Number(place.mapx)
     );
-
-    bounds.extend(position);
 
     const marker = new kakao.maps.Marker({
       map,
       position,
     });
 
-    kakao.maps.event.addListener(marker, "click", () => {
-      selectedPlace.value = place;
+    kakao.maps.event.addListener(marker, "click", async () => {
+      // 이전 선택 해제
+      if (currentMarker) {
+        currentMarker.setZIndex(0);
+      }
 
+      currentMarker = marker;
+      currentMarker.setZIndex(999);
+
+      // 카드 내용 변경
+      selectedPlace.value = { ...place };
+
+      await nextTick();
+
+      // 해당 위치로 이동
       map.panTo(position);
 
       setTimeout(() => {
         updateCardPosition(position);
-      }, 200);
+      }, 250);
     });
   });
 
-  map.setBounds(bounds);
-
-  // 자동 확대
-  setTimeout(() => {
-    map.setLevel(Math.max(map.getLevel() - 1, 3));
-  }, 100);
-
+  // 지도 움직이면 카드도 같이 이동
   kakao.maps.event.addListener(map, "center_changed", () => {
     if (!selectedPlace.value) return;
 
     updateCardPosition(
       new kakao.maps.LatLng(
         Number(selectedPlace.value.mapy),
-        Number(selectedPlace.value.mapx),
-      ),
+        Number(selectedPlace.value.mapx)
+      )
     );
   });
 
@@ -125,19 +129,34 @@ async function renderMap() {
     updateCardPosition(
       new kakao.maps.LatLng(
         Number(selectedPlace.value.mapy),
-        Number(selectedPlace.value.mapx),
-      ),
+        Number(selectedPlace.value.mapx)
+      )
+    );
+  });
+
+  kakao.maps.event.addListener(map, "drag", () => {
+    if (!selectedPlace.value) return;
+
+    updateCardPosition(
+      new kakao.maps.LatLng(
+        Number(selectedPlace.value.mapy),
+        Number(selectedPlace.value.mapx)
+      )
     );
   });
 }
 
 function updateCardPosition(latlng) {
+  if (!map) return;
+
   const projection = map.getProjection();
 
   const point = projection.containerPointFromCoords(latlng);
 
   cardPosition.x = point.x;
-  cardPosition.y = point.y - 15;
+
+  // 마커 바로 위
+  cardPosition.y = point.y - 25;
 }
 
 function openMap(url) {

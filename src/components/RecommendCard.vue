@@ -57,4 +57,11 @@ function handleClick() {
   emits('click', props.googleMapUrl)
 }
 
+watch(
+  () => props.image,
+  (newImage) => {
+    imgSrc.value = newImage
+  }
+)
+
 </script>
