@@ -1,25 +1,18 @@
 <template>
   <div
-    class="relative w-[80vw] h-[80vh] bg-white rounded-2xl overflow-hidden shadow-2xl"
+    class="relative w-full h-[500px] bg-white rounded-2xl overflow-hidden border border-slate-200"
   >
-    <!-- 닫기 -->
     <button
-      @click="$emit('close')"
-      class="absolute top-5 right-5 z-50 bg-white rounded-full shadow-lg w-11 h-11 hover:bg-slate-100"
+      @click="showRandomPlace"
+      class="absolute top-4 right-4 z-50 px-4 py-2 bg-white text-brand border border-brand rounded-full shadow-md hover:bg-brand-light transition"
     >
-      ✕
+      추천
     </button>
+    <div ref="mapContainer" class="w-full h-full"></div>
 
-    <!-- 지도 -->
-    <div
-      ref="mapContainer"
-      class="w-full h-full"
-    ></div>
-
-    <!-- RecommendCard -->
     <div
       v-if="selectedPlace"
-      class="absolute z-40 w-[340px] -translate-x-1/2 -translate-y-full"
+      class="absolute z-40 w-[300px] -translate-x-1/2 -translate-y-full"
       :style="{
         left: cardPosition.x + 'px',
         top: cardPosition.y + 'px',
@@ -37,7 +30,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from "vue";
+import { ref, reactive, onMounted, nextTick, watch } from "vue";
 import RecommendCard from "./RecommendCard.vue";
 import { loadMap } from "./loadMap";
 import { fetchCategory } from "../api/endpoints";
@@ -45,10 +38,9 @@ import { fetchCategory } from "../api/endpoints";
 const props = defineProps({
   category: {
     type: Object,
-    required: true,
+    default: null,
   },
 });
-
 defineEmits(["close"]);
 
 const mapContainer = ref(null);
@@ -62,8 +54,10 @@ const cardPosition = reactive({
 
 let map = null;
 let currentMarker = null;
+const markers = ref([]);
 
 async function renderMap() {
+  if (!props.category) return;
   await loadMap();
 
   const places = await fetchCategory(props.category.endpoint);
@@ -71,10 +65,7 @@ async function renderMap() {
   if (!places?.length) return;
 
   // 강남역
-  const center = new kakao.maps.LatLng(
-    37.5012860931305,
-    127.039604663862
-  );
+  const center = new kakao.maps.LatLng(37.5012860931305, 127.039604663862);
 
   map = new kakao.maps.Map(mapContainer.value, {
     center,
@@ -84,11 +75,17 @@ async function renderMap() {
   places.forEach((place) => {
     const position = new kakao.maps.LatLng(
       Number(place.mapy),
-      Number(place.mapx)
+      Number(place.mapx),
     );
 
     const marker = new kakao.maps.Marker({
       map,
+      position,
+    });
+
+    markers.value.push({
+      marker,
+      place,
       position,
     });
 
@@ -122,8 +119,8 @@ async function renderMap() {
     updateCardPosition(
       new kakao.maps.LatLng(
         Number(selectedPlace.value.mapy),
-        Number(selectedPlace.value.mapx)
-      )
+        Number(selectedPlace.value.mapx),
+      ),
     );
   });
 
@@ -133,8 +130,8 @@ async function renderMap() {
     updateCardPosition(
       new kakao.maps.LatLng(
         Number(selectedPlace.value.mapy),
-        Number(selectedPlace.value.mapx)
-      )
+        Number(selectedPlace.value.mapx),
+      ),
     );
   });
 
@@ -144,8 +141,8 @@ async function renderMap() {
     updateCardPosition(
       new kakao.maps.LatLng(
         Number(selectedPlace.value.mapy),
-        Number(selectedPlace.value.mapx)
-      )
+        Number(selectedPlace.value.mapx),
+      ),
     );
   });
 }
@@ -169,7 +166,46 @@ function openMap(url) {
   }
 }
 
+function showRandomPlace() {
+  if (!markers.value.length) return;
+
+  const random =
+    markers.value[Math.floor(Math.random() * markers.value.length)];
+
+  if (currentMarker) {
+    currentMarker.setZIndex(0);
+  }
+
+  currentMarker = random.marker;
+  currentMarker.setZIndex(999);
+
+  selectedPlace.value = { ...random.place };
+
+  map.panTo(random.position);
+
+  setTimeout(() => {
+    updateCardPosition(random.position);
+  }, 300);
+}
+
 onMounted(() => {
-  renderMap();
+  if (props.category) {
+    renderMap();
+  }
 });
+
+watch(
+  () => props.category,
+  () => {
+    if (map) {
+      map = null;
+      currentMarker = null;
+      markers.value = [];
+      selectedPlace.value = null;
+      mapContainer.value.innerHTML = "";
+    }
+
+    renderMap();
+  },
+);
 </script>
