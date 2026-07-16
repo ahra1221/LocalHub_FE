@@ -1,8 +1,5 @@
 import api from "./client";
 
-export const getBannerView = () => api.get("/banner/view").then((r) => r.data);
-export const getBannerPlay = () => api.get("/banner/play").then((r) => r.data);
-
 export const fetchPost = () => api.get("/posts").then((r) => r.data);
 export const fetchPostPopular = () =>
   api.get("/posts/popular").then((r) => r.data);

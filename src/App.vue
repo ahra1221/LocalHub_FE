@@ -9,9 +9,9 @@
       <div
         class="relative max-w-[1800px] mx-auto px-12 h-16 flex items-center justify-center"
       >
-        <span class="font-bold text-4xl text-brand tracking-tight"
-          >SeoulHub</span
-        >
+        <span class="font-bold text-2xl sm:text-4xl text-brand tracking-tight">
+          SeoulHub
+        </span>
       </div>
     </header>
 
@@ -40,33 +40,11 @@
         </aside>
 
         <section class="lg:col-span-6">
-          <section v-if="recommendVisible" class="mb-6">
-            <div
-              v-for="item in recommendItems"
-              :key="item.title"
-              class="flex gap-4 items-stretch"
-            >
-              <div class="flex-1">
-                <RecommendCard
-                  class="h-full"
-                  :title="item.title"
-                  :image="item.image"
-                  :address="item.address"
-                  :googleMapUrl="item.googleMapUrl"
-                />
-              </div>
-
-              <div class="flex-1">
-                <MapView :mapx="item.mapx" :mapy="item.mapy" />
-              </div>
-            </div>
-          </section>
-
           <div
             v-if="view === 'list'"
             class="mb-6 flex items-center justify-between gap-2"
           >
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               <button
                 @click="changeSort('latest')"
                 :class="
@@ -440,18 +418,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 
-import RecommendCard from "./components/RecommendCard.vue";
 import AIChat from "./components/AIChat.vue";
 import CommentSection from "./components/CommentSection.vue";
-import MapView from "./components/MapView.vue";
 import CategoryButton from "./components/CategoryButton.vue";
 import CategoryMapView from "./components/CategoryMapView.vue";
 import { categories } from "./components/categories";
 
 import "./App.css";
 import {
-  getBannerView,
-  getBannerPlay,
   fetchPost,
   fetchPostPopular,
   fetchPostPopular2,
@@ -460,7 +434,6 @@ import {
   deletePost,
   updatePost,
   createComment,
-  fetchCategory,
 } from "./api/endpoints";
 
 const posts = ref([]);
@@ -481,87 +454,6 @@ const toast = reactive({
   message: "",
 });
 
-// Recommend card state
-const recommendVisible = ref(false);
-const recommendItems = ref([]);
-const activeRecommend = ref(null);
-
-async function showRecommendFor(type) {
-  if (activeRecommend.value === type) {
-    closeRecommend();
-    return;
-  }
-  activeRecommend.value = type;
-  recommendVisible.value = true;
-  if (type === "watch") {
-    try {
-      const data = await getBannerView();
-      const image = data?.image || data?.image2 || "/images/fallback.jpg";
-      const title = data?.title || "제목 없음";
-      const address = data?.address || "";
-      recommendItems.value = [
-        {
-          title,
-          image,
-          address,
-          googleMapUrl: data?.googleMapUrl || null,
-          mapx: data?.mapx || null,
-          mapy: data?.mapy || null,
-        },
-      ];
-    } catch (err) {
-      console.error("getBannerView error", err);
-      recommendItems.value = [
-        {
-          title: "한강공원",
-          image: "/images/fallback.jpg",
-          address: "서울 대표 관광지",
-          googleMapUrl: null,
-          mapx: null,
-          mapy: null,
-        },
-      ];
-    }
-  } else {
-    try {
-      const data = await getBannerPlay();
-      // getBannerPlay may return an array; map first item if present
-      const item = Array.isArray(data) ? data[0] : data;
-      const image = item?.image || item?.image2 || "/images/fallback.jpg";
-      const title = item?.title || "제목 없음";
-      const address = item?.address || "";
-      recommendItems.value = [
-        {
-          title,
-          image,
-          address,
-          googleMapUrl: data?.googleMapUrl || null,
-          mapx: data?.mapx || null,
-          mapy: data?.mapy || null,
-        },
-      ];
-    } catch (err) {
-      console.error("getBannerPlay error", err);
-      recommendItems.value = [
-        {
-          title: "광화문",
-          image: "/images/fallback.jpg",
-          address: "역사와 문화의 중심지",
-          googleMapUrl: null,
-          mapx: null,
-          mapy: null,
-        },
-      ];
-    }
-  }
-}
-
-function openMap(url) {
-  if (url) {
-    window.open(url, "_blank");
-  }
-}
-
 const sortedPosts = computed(() => {
   return [...posts.value].map((post) => ({
     ...post,
@@ -578,8 +470,6 @@ const selectedPost = computed(() => {
 
 onMounted(async () => {
   await changeSort("latest");
-  const bannerViewData = await getBannerView();
-  recommendItems.value = bannerViewData;
 });
 
 async function changeSort(type) {
@@ -604,7 +494,7 @@ async function changeSort(type) {
   posts.value = mapPosts(data);
 }
 
-function mapPosts(data) {
+function mapPosts(data = []) {
   return data.map((post) => ({
     id: post.id,
     title: post.title,
@@ -616,28 +506,25 @@ function mapPosts(data) {
   }));
 }
 
+let toastTimer;
+
 function showToast(message) {
   toast.message = message;
   toast.show = true;
-  setTimeout(() => {
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
     toast.show = false;
   }, 2800);
 }
 
-function goHome() {
-  closeRecommend();
-  resetState();
-  view.value = "list";
-}
-
 function showCreate() {
-  closeRecommend();
   resetForm();
   view.value = "create";
 }
 
 async function openDetail(post) {
-  closeRecommend();
   const detailData = await fetchPostDetail(post.id);
   const index = posts.value.findIndex((item) => item.id === post.id);
 
@@ -658,7 +545,6 @@ async function openDetail(post) {
 }
 
 function backToList() {
-  closeRecommend();
   resetState();
   view.value = "list";
 }
@@ -687,7 +573,6 @@ function requestEdit() {
 
   form.title = post.title;
   form.content = post.content;
-  form.password = post.password;
   view.value = "edit";
 }
 
@@ -724,10 +609,14 @@ async function submitCreate() {
     password: form.password,
   };
 
-  await createPost(newPost);
-  await changeSort(sortType.value);
-  showToast("게시글이 등록되었습니다.");
-  view.value = "list";
+ try {
+    await createPost(newPost);
+    await changeSort(sortType.value);
+    showToast("게시글이 등록되었습니다.");
+    view.value = "list";
+  } catch(err) {
+    showToast("등록 중 오류가 발생했습니다.");
+  }
 }
 
 async function submitEdit() {
@@ -769,12 +658,6 @@ function resetState() {
   passwordCheck.value = "";
   errorMessage.value = "";
   resetForm();
-}
-
-function closeRecommend() {
-  recommendVisible.value = false;
-  activeRecommend.value = null;
-  recommendItems.value = [];
 }
 
 async function submitComment(comment) {
