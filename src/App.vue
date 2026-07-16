@@ -573,6 +573,7 @@ function requestEdit() {
 
   form.title = post.title;
   form.content = post.content;
+  form.password = "";
   view.value = "edit";
 }
 
