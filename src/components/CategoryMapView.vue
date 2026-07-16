@@ -4,7 +4,7 @@
   >
     <button
       @click="showRandomPlace"
-      class="absolute top-4 right-4 z-50 px-4 py-2 bg-white text-brand border border-brand rounded-full shadow-md hover:bg-brand-light transition"
+      class="absolute top-4 right-4 z-50 flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-brand border border-brand text-xs sm:text-sm font-semibold rounded-2xl hover:bg-brand hover:text-white shadow-md transition"
     >
       추천
     </button>

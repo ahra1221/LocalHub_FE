@@ -10,11 +10,14 @@
         class="relative max-w-[1800px] mx-auto px-12 h-16 flex items-center justify-center"
       >
         <span class="font-bold text-4xl text-brand tracking-tight"
-            >SeoulHub</span>
+          >SeoulHub</span
+        >
       </div>
     </header>
 
-    <main class="flex-1 w-full max-w-[1800px] mx-auto px-12 py-8">
+    <main
+      class="flex-1 w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-8"
+    >
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-20">
         <aside class="lg:col-span-6">
           <div
@@ -31,9 +34,7 @@
             </div>
 
             <div class="mt-5">
-              <CategoryMapView
-                :category="selectedCategory"
-              />
+              <CategoryMapView :category="selectedCategory" />
             </div>
           </div>
         </aside>
@@ -61,46 +62,51 @@
             </div>
           </section>
 
-          <div v-if="view === 'list'" class="mb-6 flex items-center gap-2">
-            <button
-              @click="changeSort('latest')"
-              :class="
-                sortType === 'latest'
-                  ? 'bg-brand text-white'
-                  : 'bg-white text-slate-600 border border-slate-200'
-              "
-              class="px-4 py-2 rounded-full text-sm font-medium transition"
-            >
-              최신순
-            </button>
+          <div
+            v-if="view === 'list'"
+            class="mb-6 flex items-center justify-between gap-2"
+          >
+            <div class="flex gap-2">
+              <button
+                @click="changeSort('latest')"
+                :class="
+                  sortType === 'latest'
+                    ? 'bg-brand text-white'
+                    : 'bg-white text-slate-600 border border-slate-200'
+                "
+                class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition"
+              >
+                최신순
+              </button>
 
-            <button
-              @click="changeSort('views')"
-              :class="
-                sortType === 'views'
-                  ? 'bg-brand text-white'
-                  : 'bg-white text-slate-600 border border-slate-200'
-              "
-              class="px-4 py-2 rounded-full text-sm font-medium transition"
-            >
-              조회순
-            </button>
+              <button
+                @click="changeSort('views')"
+                :class="
+                  sortType === 'views'
+                    ? 'bg-brand text-white'
+                    : 'bg-white text-slate-600 border border-slate-200'
+                "
+                class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition"
+              >
+                조회순
+              </button>
 
-            <button
-              @click="changeSort('comments')"
-              :class="
-                sortType === 'comments'
-                  ? 'bg-brand text-white'
-                  : 'bg-white text-slate-600 border border-slate-200'
-              "
-              class="px-4 py-2 rounded-full text-sm font-medium transition"
-            >
-              댓글순
-            </button>
+              <button
+                @click="changeSort('comments')"
+                :class="
+                  sortType === 'comments'
+                    ? 'bg-brand text-white'
+                    : 'bg-white text-slate-600 border border-slate-200'
+                "
+                class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition"
+              >
+                댓글순
+              </button>
+            </div>
 
             <button
               @click="showCreate"
-              class="ml-auto transition-custom flex items-center gap-1.5 px-4 py-2 bg-white text-brand border border-brand text-sm font-semibold rounded-xl hover:bg-brand hover:text-white shadow-md"
+              class="flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-brand border border-brand text-xs sm:text-sm font-semibold rounded-xl hover:bg-brand hover:text-white shadow-md transition"
             >
               <i class="fa-solid fa-pen-nib text-xs"></i>
               <span>글쓰기</span>
@@ -798,5 +804,4 @@ const selectedCategory = ref(categories[0]);
 function selectCategory(category) {
   selectedCategory.value = category;
 }
-
 </script>
