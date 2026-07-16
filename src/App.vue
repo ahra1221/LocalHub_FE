@@ -39,33 +39,6 @@
         </aside>
 
         <section class="lg:col-span-6">
-          <!-- Recommend buttons -->
-          <!-- <div class="mb-6 flex gap-3">
-            <button
-              @click="showRecommendFor('watch')"
-              :class="
-                activeRecommend === 'watch'
-                  ? 'bg-brand text-white border-brand'
-                  : 'bg-white text-slate-700 border-slate-200'
-              "
-              class="flex-1 py-3 rounded-lg font-semibold border transition"
-            >
-              볼거리 추천
-            </button>
-
-            <button
-              @click="showRecommendFor('enjoy')"
-              :class="
-                activeRecommend === 'enjoy'
-                  ? 'bg-brand text-white border-brand'
-                  : 'bg-white text-slate-700 border-slate-200'
-              "
-              class="flex-1 py-3 rounded-lg font-semibold border transition"
-            >
-              즐길거리 추천
-            </button>
-          </div> -->
-
           <section v-if="recommendVisible" class="mb-6">
             <div
               v-for="item in recommendItems"
@@ -444,7 +417,7 @@
 
     <div
       v-if="toast.show"
-      class="fixed bottom-6 right-6 z-50 transition-all duration-300 transform translate-y-0 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl max-w-sm border bg-white border-slate-100"
+      class="fixed top-6 right-6 z-50 transition-all duration-300 transform translate-y-0 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl max-w-sm border bg-white border-slate-100"
     >
       <span
         class="flex items-center justify-center w-6 h-6 rounded-full shrink-0 text-xs bg-brand/10 text-brand"
@@ -455,14 +428,6 @@
         {{ toast.message }}
       </p>
     </div>
-
-    <footer
-      class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400"
-    >
-      <div class="max-w-3xl mx-auto px-5 space-y-1">
-        <p class="font-bold text-slate-500">SeoulHub</p>
-      </div>
-    </footer>
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative w-full h-[500px] bg-white rounded-2xl overflow-hidden border border-slate-200"
+    class="relative w-full h-[600px] bg-white rounded-2xl overflow-hidden border border-slate-200"
   >
     <button
       @click="showRandomPlace"
